@@ -1,0 +1,117 @@
+"use client";
+
+import { useState } from "react";
+import { useAuth } from "../context/AuthContext";
+import Link from "next/link";
+
+export default function AdminHeader({ title }) {
+  // สร้าง state สำหรับจัดการการแสดงเมนูบนมือถือและเมนูของผู้ใช้
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  // รับข้อมูลผู้ใช้และฟังก์ชัน logout จาก AuthContext
+  const { user, logout } = useAuth();
+
+  // ฟังก์ชันจัดการการออกจากระบบที่มีการยืนยันก่อน
+  const handleLogout = () => {
+    if (confirm('คุณต้องการออกจากระบบใช่หรือไม่?')) {
+      logout();
+    }
+  };
+
+  return (
+    <header className="bg-white shadow">
+      <div className="flex justify-between items-center p-4">
+        {/* ส่วนด้านซ้ายที่แสดงชื่อหน้าและปุ่มเมนูบนมือถือ */}
+        <div className="flex items-center">
+          <button 
+            className="md:hidden mr-4"
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
+          <h1 className="text-xl font-semibold text-gray-800">{title}</h1>
+        </div>
+        
+        {/* ส่วนด้านขวาที่แสดงไอคอนแจ้งเตือนและข้อมูลผู้ใช้ */}
+        <div className="flex items-center space-x-4">
+          {/* ปุ่มแจ้งเตือน */}
+          <div className="relative">
+            <button className="p-1 rounded-full hover:bg-gray-100">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+              </svg>
+              {/* จุดแสดงการแจ้งเตือนใหม่ */}
+              <span className="absolute top-0 right-0 h-2 w-2 rounded-full bg-red-500"></span>
+            </button>
+          </div>
+          
+          {/* เมนูผู้ใช้ */}
+          <div className="relative">
+            <div 
+              className="flex items-center cursor-pointer"
+              onClick={() => setUserMenuOpen(!userMenuOpen)}
+            >
+              {/* ไอคอนโปรไฟล์ผู้ใช้ */}
+              <div className="avatar">
+                <div className="w-10 h-10 rounded-full bg-[#2A7F7F] flex items-center justify-center text-white font-medium">
+                  {user?.name ? user.name.charAt(0).toUpperCase() : 'A'}
+                </div>
+              </div>
+              <span className="ml-2 hidden md:block">{user?.name || 'Admin User'}</span>
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </div>
+            
+            {/* เมนูผู้ใช้แบบดรอปดาวน์ */}
+            {userMenuOpen && (
+              <div className="absolute right-0 mt-2 w-48 bg-white rounded-md overflow-hidden shadow-xl z-10">
+                <Link 
+                  href="/admin/profile" 
+                  className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  onClick={() => setUserMenuOpen(false)}
+                >
+                  โปรไฟล์ของฉัน
+                </Link>
+                <Link 
+                  href="/admin/settings" 
+                  className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  onClick={() => setUserMenuOpen(false)}
+                >
+                  ตั้งค่าระบบ
+                </Link>
+                <button 
+                  onClick={handleLogout}
+                  className="block w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-gray-100"
+                >
+                  ออกจากระบบ
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+      
+      {/* เมนูบนมือถือที่แสดงเมื่อกดปุ่มเมนู */}
+      {isMobileMenuOpen && (
+        <div className="bg-white border-t border-gray-200 md:hidden">
+          <nav className="px-2 pt-2 pb-4">
+            <Link href="/admin" className="block px-3 py-2 rounded-md text-base font-medium hover:bg-gray-100">แดชบอร์ด</Link>
+            <Link href="/admin/employees" className="block px-3 py-2 rounded-md text-base font-medium hover:bg-gray-100">จัดการพนักงาน</Link>
+            <Link href="/admin/schedule" className="block px-3 py-2 rounded-md text-base font-medium hover:bg-gray-100">ตารางงาน</Link>
+            <Link href="/admin/profile" className="block px-3 py-2 rounded-md text-base font-medium hover:bg-gray-100">โปรไฟล์ของฉัน</Link>
+            <Link href="/admin/settings" className="block px-3 py-2 rounded-md text-base font-medium hover:bg-gray-100">ตั้งค่าระบบ</Link>
+            <button 
+              onClick={handleLogout}
+              className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-red-500 hover:bg-gray-100"
+            >
+              ออกจากระบบ
+            </button>
+          </nav>
+        </div>
+      )}
+    </header>
+  );
+}
