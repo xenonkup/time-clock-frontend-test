@@ -1,9 +1,10 @@
-import TimeClockForm from '@/components/TimeClockForm';
 
 export default function Home() {
   return (
-    <main className="min-h-screen flex items-center justify-center">
-      <TimeClockForm />
-    </main>
+    <>
+      <h1 className="text-xl font-bold underline">
+        Hello world!
+      </h1>
+    </>
   );
 } 
