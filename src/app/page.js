@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 
 // คอมโพเนนต์หลักสำหรับหน้าเข้าสู่ระบบ
@@ -15,8 +15,17 @@ export default function Home() {
   const [error, setError] = useState("");
   // สร้าง state สำหรับสถานะจดจำการเข้าสู่ระบบ
   const [rememberMe, setRememberMe] = useState(false);
+  // state สำหรับควบคุมการแสดงผลหน้าเว็บ
+  const [pageReady, setPageReady] = useState(false);
   // ดึงฟังก์ชันเข้าสู่ระบบจาก AuthContext
-  const { login } = useAuth();
+  const { login, loading } = useAuth();
+
+  // ตรวจสอบสถานะ loading จาก AuthContext
+  useEffect(() => {
+    if (!loading) {
+      setPageReady(true);
+    }
+  }, [loading]);
 
   // ฟังก์ชันจัดการการส่งฟอร์มเข้าสู่ระบบ
   const handleSubmit = (e) => {
@@ -35,6 +44,15 @@ export default function Home() {
       setError("ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง");
     }
   };
+
+  // แสดงหน้าโหลดถ้า AuthContext กำลังโหลดข้อมูล
+  if (!pageReady) {
+    return (
+      <div className="bg-[#DEFBF9] min-h-screen flex items-center justify-center">
+        <div className="text-[#2A7F7F] text-xl">กำลังโหลด...</div>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -127,22 +145,6 @@ export default function Home() {
             <p className="font-medium">หมายเหตุสำคัญ</p>
             <p>พนักงานไม่สามารถลงทะเบียนบัญชีผู้ใช้ได้ด้วยตนเอง</p>
             <p>กรุณาติดต่อผู้ดูแลระบบเพื่อขอรับบัญชีผู้ใช้สำหรับเข้าใช้งาน</p>
-          </div>
-          {/* ข้อมูลรหัสสำหรับทดสอบระบบ */}
-          <p className="mt-2">
-            ข้อมูลเข้าสู่ระบบสำหรับทดสอบ:
-          </p>
-          <div className="mt-2 flex flex-wrap justify-center gap-4">
-            <div>
-              <p><strong>แอดมิน</strong></p>
-              <p>ชื่อผู้ใช้: admin</p>
-              <p>รหัสผ่าน: admin123</p>
-            </div>
-            <div>
-              <p><strong>พนักงาน</strong></p>
-              <p>ชื่อผู้ใช้: employee1</p>
-              <p>รหัสผ่าน: emp123</p>
-            </div>
           </div>
         </div>
       </main>
