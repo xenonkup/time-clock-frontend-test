@@ -16,15 +16,22 @@ export default function Home() {
   const [pageReady, setPageReady] = useState(false); // สำหรับควบคุมการแสดงผลหน้าเว็บ ป้องกันการกระพริบ
   
   // ดึงฟังก์ชันและสถานะจาก AuthContext
-  const { login, loading } = useAuth(); // login=ฟังก์ชันเข้าสู่ระบบ, loading=สถานะกำลังโหลด
+  const { login, loading, user, logout } = useAuth(); // login=ฟังก์ชันเข้าสู่ระบบ, loading=สถานะกำลังโหลด
 
   // ตรวจสอบสถานะ loading จาก AuthContext เพื่อป้องกันการกระพริบของหน้าเว็บ
   useEffect(() => {
+    // ถ้ามีการล็อกอินแล้วแต่อยู่ที่หน้าหลัก ให้ออกจากระบบ
+    // (ป้องกันปัญหาเข้าสู่ระบบอัตโนมัติตอน dev)
+    if (user && window.location.pathname === '/' && process.env.NODE_ENV === 'development') {
+      // ออกจากระบบเพื่อป้องกันการล็อกอินอัตโนมัติในโหมด development
+      logout();
+    }
+    
     // เมื่อไม่มีการโหลดข้อมูลแล้ว ให้แสดงหน้าเว็บ
     if (!loading) {
       setPageReady(true);
     }
-  }, [loading]); // เรียกใช้เมื่อ loading เปลี่ยนแปลง
+  }, [loading, user, logout]);
 
   // ฟังก์ชันจัดการการส่งฟอร์มเข้าสู่ระบบ
   const handleSubmit = (e) => {
@@ -38,7 +45,8 @@ export default function Home() {
     }
     
     // เรียกใช้ฟังก์ชันเข้าสู่ระบบและตรวจสอบผลลัพธ์
-    const success = login(username, password);
+    // ส่งค่า rememberMe เป็นพารามิเตอร์ที่สามเพื่อควบคุมการนำทางอัตโนมัติ
+    const success = login(username, password, rememberMe);
     if (!success) {
       setError("ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง");
     }
@@ -108,7 +116,7 @@ export default function Home() {
               />
             </div>
             
-            {/* ตัวเลือกจดจำการเข้าสู่ระบบ สำหรับเก็บสถานะผู้ใช้ */}
+            {/* ตัวเลือกจดจำการเข้าสู่ระบบ สำหรับเก็บสถานะผู้ใช้และควบคุมการนำทางอัตโนมัติ */}
             <div className="mb-6 flex items-center">
               <input 
                 type="checkbox" 

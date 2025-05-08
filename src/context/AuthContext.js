@@ -18,19 +18,27 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   // สร้าง state สำหรับแสดงสถานะการโหลดข้อมูล
   const [loading, setLoading] = useState(true);
+  // สร้าง state เพื่อควบคุมการนำทางอัตโนมัติ (สำหรับการพัฒนา)
+  const [autoNavigate, setAutoNavigate] = useState(false);
   const router = useRouter();
 
   // ตรวจสอบการเข้าสู่ระบบเดิมเมื่อคอมโพเนนต์ถูกโหลด
   useEffect(() => {
     // ตรวจสอบข้อมูลผู้ใช้ที่บันทึกไว้ใน localStorage
     const savedUser = localStorage.getItem('timeClockUser');
+    // ตรวจสอบการตั้งค่าการนำทางอัตโนมัติ
+    const savedAutoNavigate = localStorage.getItem('autoNavigate') === 'true';
+    
+    // อัปเดตค่า autoNavigate
+    setAutoNavigate(savedAutoNavigate);
+    
     if (savedUser) {
       try {
         const parsedUser = JSON.parse(savedUser);
         setUser(parsedUser);
         
-        // เปลี่ยนเส้นทางไปตามบทบาทถ้าอยู่ที่หน้าหลัก
-        if (window.location.pathname === '/') {
+        // เปลี่ยนเส้นทางไปตามบทบาทถ้าอยู่ที่หน้าหลักและตั้งค่าให้นำทางอัตโนมัติ
+        if (window.location.pathname === '/' && savedAutoNavigate) {
           if (parsedUser.role === 'admin') {
             router.push('/admin');
           } else if (parsedUser.role === 'employee') {
@@ -46,7 +54,7 @@ export function AuthProvider({ children }) {
   }, [router]);
 
   // ฟังก์ชันสำหรับเข้าสู่ระบบ
-  const login = (username, password) => {
+  const login = (username, password, remember = false) => {
     // ค้นหาผู้ใช้ที่ตรงกับชื่อผู้ใช้และรหัสผ่าน
     const foundUser = MOCK_USERS.find(
       (u) => u.username === username && u.password === password
@@ -56,7 +64,13 @@ export function AuthProvider({ children }) {
       // ลบรหัสผ่านออกก่อนเก็บข้อมูลผู้ใช้
       const { password, ...userWithoutPassword } = foundUser;
       setUser(userWithoutPassword);
+      
+      // เก็บข้อมูลผู้ใช้ไว้ใน localStorage
       localStorage.setItem('timeClockUser', JSON.stringify(userWithoutPassword));
+      
+      // ตั้งค่าการนำทางอัตโนมัติตามการจดจำการเข้าสู่ระบบ
+      setAutoNavigate(remember);
+      localStorage.setItem('autoNavigate', remember.toString());
       
       // นำทางไปยังหน้าที่เหมาะสมตามสิทธิ์ผู้ใช้
       if (foundUser.role === 'admin') {
@@ -72,7 +86,9 @@ export function AuthProvider({ children }) {
   // ฟังก์ชันสำหรับออกจากระบบ
   const logout = () => {
     setUser(null);
+    setAutoNavigate(false);
     localStorage.removeItem('timeClockUser');
+    localStorage.removeItem('autoNavigate');
     router.push('/');
   };
 
@@ -83,7 +99,7 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, loading, hasRole }}>
+    <AuthContext.Provider value={{ user, login, logout, loading, hasRole, autoNavigate }}>
       {children}
     </AuthContext.Provider>
   );
