@@ -18,11 +18,11 @@ export default function AdminProfilePage() {
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
     name: user?.name || '',
-    email: user?.email || 'admin@timeclock.com', // ข้อมูลจำลอง
-    phone: '099-888-7777', // ข้อมูลจำลอง
+    email: user?.email || '',
+    phone: '099-999-9999', // Mock data
     position: user?.position || 'System Administrator',
-    department: 'IT',
-    hireDate: '2020-01-15' // ข้อมูลจำลอง
+    department: 'IT Management',
+    accessLevel: 'Full Access'
   });
   const [successMessage, setSuccessMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -44,7 +44,7 @@ export default function AdminProfilePage() {
     try {
       // ในระบบจริงจะส่ง API request เพื่ออัพเดทข้อมูล
       
-      // จำลองการเรียก API
+      // Simulating API call
       await new Promise(resolve => setTimeout(resolve, 1000));
       
       // แสดงข้อความสำเร็จและปิดโหมดแก้ไข
@@ -67,11 +67,11 @@ export default function AdminProfilePage() {
     // คืนค่าข้อมูลเดิมจาก user object
     setFormData({
       name: user?.name || '',
-      email: user?.email || 'admin@timeclock.com',
-      phone: '099-888-7777',
+      email: user?.email || '',
+      phone: '099-999-9999',
       position: user?.position || 'System Administrator',
-      department: 'IT',
-      hireDate: '2020-01-15'
+      department: 'IT Management',
+      accessLevel: 'Full Access'
     });
     setIsEditing(false);
   };
@@ -91,22 +91,20 @@ export default function AdminProfilePage() {
           
           {/* ส่วนแสดงข้อมูลส่วนตัว */}
           <div className="bg-white rounded-lg shadow overflow-hidden">
-            <div className="p-6 border-b border-gray-200">
-              <div className="flex justify-between items-center">
-                <h2 className="text-xl font-medium text-gray-900">ข้อมูลส่วนตัว</h2>
+            <div className="p-6">
+              <div className="flex justify-between items-start mb-6">
+                <h2 className="text-xl font-bold">ข้อมูลส่วนตัว</h2>
                 {/* ปุ่มแก้ไขข้อมูล แสดงเฉพาะเมื่อไม่ได้อยู่ในโหมดแก้ไข */}
                 {!isEditing && (
-                  <button 
+                  <button
                     onClick={() => setIsEditing(true)}
-                    className="px-4 py-2 bg-[#2A7F7F] text-white rounded-md hover:bg-[#236565]"
+                    className="bg-[#2A7F7F] text-white px-4 py-2 rounded hover:bg-[#236565] transition-colors"
                   >
                     แก้ไขข้อมูล
                   </button>
                 )}
               </div>
-            </div>
-            
-            <div className="p-6">
+              
               {/* โหมดแก้ไขข้อมูล */}
               {isEditing ? (
                 <form onSubmit={handleSubmit}>
@@ -183,102 +181,88 @@ export default function AdminProfilePage() {
                         value={formData.department}
                         onChange={handleChange}
                         className="w-full border border-gray-300 rounded-md p-2"
+                        disabled
                       />
                     </div>
                     
-                    {/* ฟอร์มกรอกวันที่เริ่มงาน */}
+                    {/* ฟอร์มกรอกระดับการเข้าถึง */}
                     <div>
-                      <label htmlFor="hireDate" className="block text-sm font-medium text-gray-700 mb-1">
-                        วันที่เริ่มงาน
+                      <label htmlFor="accessLevel" className="block text-sm font-medium text-gray-700 mb-1">
+                        ระดับการเข้าถึง
                       </label>
                       <input
-                        type="date"
-                        id="hireDate"
-                        name="hireDate"
-                        value={formData.hireDate}
+                        type="text"
+                        id="accessLevel"
+                        name="accessLevel"
+                        value={formData.accessLevel}
                         onChange={handleChange}
                         className="w-full border border-gray-300 rounded-md p-2"
+                        disabled
                       />
                     </div>
                   </div>
                   
                   {/* ปุ่มยกเลิกและบันทึกข้อมูล */}
-                  <div className="mt-6 flex justify-end space-x-3">
+                  <div className="flex space-x-4 mt-6">
+                    <button
+                      type="submit"
+                      className="bg-[#2A7F7F] text-white px-4 py-2 rounded hover:bg-[#236565] transition-colors"
+                      disabled={isLoading}
+                    >
+                      {isLoading ? 'กำลังบันทึก...' : 'บันทึกข้อมูล'}
+                    </button>
                     <button
                       type="button"
                       onClick={handleCancel}
-                      className="px-4 py-2 border border-gray-300 rounded-md"
+                      className="bg-gray-200 text-gray-700 px-4 py-2 rounded hover:bg-gray-300 transition-colors"
                     >
                       ยกเลิก
-                    </button>
-                    <button
-                      type="submit"
-                      disabled={isLoading}
-                      className={`px-4 py-2 bg-[#2A7F7F] text-white rounded-md hover:bg-[#236565] ${isLoading ? 'opacity-70 cursor-not-allowed' : ''}`}
-                    >
-                      {isLoading ? 'กำลังบันทึก...' : 'บันทึกข้อมูล'}
                     </button>
                   </div>
                 </form>
               ) : (
                 // โหมดแสดงข้อมูล (ไม่ได้แก้ไข)
-                <div className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {/* แสดงชื่อผู้ใช้ */}
-                  <div className="flex flex-col md:flex-row">
-                    <div className="md:w-48 font-medium text-gray-500">ชื่อผู้ใช้:</div>
-                    <div>{user?.username || 'admin'}</div>
+                  <div>
+                    <p className="text-sm text-gray-500">ชื่อผู้ใช้:</p>
+                    <p className="font-medium">{user?.username || 'admin'}</p>
                   </div>
                   
                   {/* แสดงชื่อ-นามสกุล */}
-                  <div className="flex flex-col md:flex-row">
-                    <div className="md:w-48 font-medium text-gray-500">ชื่อ-นามสกุล:</div>
-                    <div>{formData.name}</div>
+                  <div>
+                    <p className="text-sm text-gray-500">ชื่อ-นามสกุล:</p>
+                    <p className="font-medium">{formData.name}</p>
                   </div>
                   
                   {/* แสดงตำแหน่ง */}
-                  <div className="flex flex-col md:flex-row">
-                    <div className="md:w-48 font-medium text-gray-500">ตำแหน่ง:</div>
-                    <div>{formData.position}</div>
+                  <div>
+                    <p className="text-sm text-gray-500">ตำแหน่ง:</p>
+                    <p className="font-medium">{formData.position}</p>
                   </div>
                   
                   {/* แสดงแผนก */}
-                  <div className="flex flex-col md:flex-row">
-                    <div className="md:w-48 font-medium text-gray-500">แผนก:</div>
-                    <div>{formData.department}</div>
+                  <div>
+                    <p className="text-sm text-gray-500">แผนก:</p>
+                    <p className="font-medium">{formData.department}</p>
                   </div>
                   
                   {/* แสดงอีเมล */}
-                  <div className="flex flex-col md:flex-row">
-                    <div className="md:w-48 font-medium text-gray-500">อีเมล:</div>
-                    <div>{formData.email}</div>
+                  <div>
+                    <p className="text-sm text-gray-500">อีเมล:</p>
+                    <p className="font-medium">{formData.email}</p>
                   </div>
                   
                   {/* แสดงเบอร์โทรศัพท์ */}
-                  <div className="flex flex-col md:flex-row">
-                    <div className="md:w-48 font-medium text-gray-500">เบอร์โทรศัพท์:</div>
-                    <div>{formData.phone}</div>
+                  <div>
+                    <p className="text-sm text-gray-500">เบอร์โทรศัพท์:</p>
+                    <p className="font-medium">{formData.phone}</p>
                   </div>
                   
-                  {/* แสดงวันที่เริ่มงาน */}
-                  <div className="flex flex-col md:flex-row">
-                    <div className="md:w-48 font-medium text-gray-500">วันที่เริ่มงาน:</div>
-                    <div>
-                      {new Date(formData.hireDate).toLocaleDateString('th-TH', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric'
-                      })}
-                    </div>
-                  </div>
-                  
-                  {/* แสดงสิทธิ์ในระบบ */}
-                  <div className="flex flex-col md:flex-row">
-                    <div className="md:w-48 font-medium text-gray-500">สิทธิ์ในระบบ:</div>
-                    <div className="inline-flex items-center">
-                      <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-md text-xs font-semibold">
-                        ผู้ดูแลระบบ
-                      </span>
-                    </div>
+                  {/* แสดงระดับการเข้าถึง */}
+                  <div>
+                    <p className="text-sm text-gray-500">ระดับการเข้าถึง:</p>
+                    <p className="font-medium">{formData.accessLevel}</p>
                   </div>
                 </div>
               )}

@@ -8,33 +8,40 @@ import { Chart } from "react-google-charts";
 import { useAuth } from "../../../context/AuthContext";
 import UnauthorizedAccess from "../../../components/UnauthorizedAccess";
 
+// คอมโพเนนต์หลักของหน้าแดชบอร์ดสำหรับแอดมิน
 export default function AdminDashboard() {
+  // นำเข้าข้อมูลผู้ใช้และฟังก์ชันตรวจสอบสิทธิ์จาก Context
   const { user, hasRole } = useAuth();
+  
+  // สร้าง state สำหรับเก็บข้อมูลสถิติต่างๆ บนแดชบอร์ด
   const [stats, setStats] = useState({
-    totalEmployees: 0,
-    presentToday: 0,
-    onLeave: 0,
-    pendingApprovals: 0
+    totalEmployees: 0,     // จำนวนพนักงานทั้งหมด
+    presentToday: 0,       // จำนวนพนักงานที่มาทำงานวันนี้
+    onLeave: 0,            // จำนวนพนักงานที่ลางานวันนี้
+    pendingApprovals: 0    // จำนวนคำขอที่รอการอนุมัติ
   });
   
-  const [employeesByDept, setEmployeesByDept] = useState([]);
-  const [weeklyAttendance, setWeeklyAttendance] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
+  // state สำหรับเก็บข้อมูลกราฟ
+  const [employeesByDept, setEmployeesByDept] = useState([]); // ข้อมูลพนักงานแยกตามแผนก (สำหรับกราฟวงกลม)
+  const [weeklyAttendance, setWeeklyAttendance] = useState([]); // ข้อมูลการเข้างานรายสัปดาห์ (สำหรับกราฟเส้น)
+  const [isLoading, setIsLoading] = useState(true); // แสดงสถานะการโหลดข้อมูล
   
-  // Role verification
-  if (!user || !hasRole('admin')) {
-    return <UnauthorizedAccess />;
-  }
-  
+  // ดึงข้อมูลสำหรับแสดงบนแดชบอร์ดเมื่อคอมโพเนนต์ถูกโหลด
   useEffect(() => {
+    // ข้ามการดึงข้อมูลถ้าผู้ใช้ไม่มีสิทธิ์แอดมิน
+    if (!user || !hasRole('admin')) {
+      return;
+    }
+    
+    // ฟังก์ชันดึงข้อมูลสำหรับแดชบอร์ด
     const fetchDashboardData = async () => {
       try {
         setIsLoading(true);
         
-        // จำลองการโหลดข้อมูล
+        // จำลองการโหลดข้อมูล (ในระบบจริงจะเป็นการเรียก API)
         await new Promise(resolve => setTimeout(resolve, 500));
         
-        // จำลองข้อมูลพนักงาน
+        // จำลองข้อมูลพนักงานสำหรับใช้คำนวณสถิติ
         const mockEmployees = [
           { id: 1, name: "สมชาย ใจดี", department: "Engineering", status: "active", attendance: "present" },
           { id: 2, name: "สมหญิง รักดี", department: "Engineering", status: "active", attendance: "present" },
@@ -53,12 +60,12 @@ export default function AdminDashboard() {
           { id: 15, name: "อภิชาติ ชาติไทย", department: "Finance", status: "active", attendance: "late" },
         ];
         
-        // คำนวณสถิติพนักงาน
+        // คำนวณสถิติพนักงานจากข้อมูลจำลอง
         const activeEmployees = mockEmployees.filter(emp => emp.status === "active");
         const presentToday = mockEmployees.filter(emp => emp.attendance === "present").length;
         const onLeave = mockEmployees.filter(emp => emp.attendance === "absent").length;
         
-        // คำนวณการกระจายตามแผนก
+        // คำนวณข้อมูลสำหรับกราฟแสดงจำนวนพนักงานแยกตามแผนก
         const departments = {};
         mockEmployees.forEach(emp => {
           if (emp.status === "active") {
@@ -69,12 +76,13 @@ export default function AdminDashboard() {
           }
         });
         
+        // แปลงข้อมูลให้อยู่ในรูปแบบที่ใช้กับกราฟ Google Charts
         const departmentData = [['Department', 'Employees']];
         Object.entries(departments).forEach(([dept, count]) => {
           departmentData.push([dept, count]);
         });
         
-        // จำลองข้อมูลการเข้างานรายสัปดาห์
+        // จำลองข้อมูลการเข้างานรายสัปดาห์สำหรับกราฟเส้น
         const weeklyData = [
           ['Day', 'มาทำงาน', 'ขาด/ลา', 'มาสาย'],
           ['จันทร์', 14, 1, 0],
@@ -84,6 +92,7 @@ export default function AdminDashboard() {
           ['ศุกร์', 14, 0, 1],
         ];
         
+        // อัพเดต state ด้วยข้อมูลที่คำนวณได้
         setStats({
           totalEmployees: activeEmployees.length,
           presentToday: presentToday,
@@ -91,6 +100,7 @@ export default function AdminDashboard() {
           pendingApprovals: 2, // จำลองข้อมูลคำขออนุมัติที่รอดำเนินการ
         });
         
+        // อัพเดต state สำหรับกราฟ
         setEmployeesByDept(departmentData);
         setWeeklyAttendance(weeklyData);
       } catch (error) {
@@ -100,10 +110,16 @@ export default function AdminDashboard() {
       }
     };
     
+    // เรียกฟังก์ชันดึงข้อมูล
     fetchDashboardData();
-  }, []);
+  }, [user, hasRole]);
   
-  // Formatting functions
+  // ตรวจสอบสิทธิ์การเข้าถึงหน้านี้ (ต้องเป็นแอดมิน)
+  if (!user || !hasRole('admin')) {
+    return <UnauthorizedAccess />;
+  }
+  
+  // ฟังก์ชันจัดรูปแบบวันที่เป็นภาษาไทย
   const formatThaiDate = () => {
     const today = new Date();
     const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
@@ -112,24 +128,26 @@ export default function AdminDashboard() {
 
   return (
     <>
-      {/* Header */}
+      {/* ส่วนหัวของหน้า */}
       <AdminHeader title="แดชบอร์ด" />
       
-      {/* Main content */}
+      {/* เนื้อหาหลัก */}
       <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 p-4">
-        {/* Date and overview */}
+        {/* แสดงวันที่ปัจจุบัน */}
         <div className="mb-4 text-sm text-gray-600">
           วันที่: {formatThaiDate()}
         </div>
         
+        {/* แสดง loading spinner ระหว่างโหลดข้อมูล */}
         {isLoading ? (
           <div className="flex justify-center items-center h-96">
             <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#2A7F7F]"></div>
           </div>
         ) : (
           <>
-            {/* Stats Cards */}
+            {/* แถวบัตรแสดงสถิติสรุปข้อมูลพนักงาน */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+              {/* บัตรแสดงจำนวนพนักงานทั้งหมด */}
               <div className="bg-white rounded-lg shadow p-4">
                 <div className="flex items-center">
                   <div className="p-3 rounded-full bg-blue-100 text-blue-500 mr-4">
@@ -144,6 +162,7 @@ export default function AdminDashboard() {
                 </div>
               </div>
               
+              {/* บัตรแสดงจำนวนพนักงานที่มาทำงานวันนี้ */}
               <div className="bg-white rounded-lg shadow p-4">
                 <div className="flex items-center">
                   <div className="p-3 rounded-full bg-green-100 text-green-500 mr-4">
@@ -158,6 +177,7 @@ export default function AdminDashboard() {
                 </div>
               </div>
               
+              {/* บัตรแสดงจำนวนพนักงานที่ลาวันนี้ */}
               <div className="bg-white rounded-lg shadow p-4">
                 <div className="flex items-center">
                   <div className="p-3 rounded-full bg-yellow-100 text-yellow-500 mr-4">
@@ -172,6 +192,7 @@ export default function AdminDashboard() {
                 </div>
               </div>
               
+              {/* บัตรแสดงจำนวนคำขอที่รอการอนุมัติ */}
               <div className="bg-white rounded-lg shadow p-4">
                 <div className="flex items-center">
                   <div className="p-3 rounded-full bg-red-100 text-red-500 mr-4">
@@ -187,8 +208,9 @@ export default function AdminDashboard() {
               </div>
             </div>
             
-            {/* Attendance Chart */}
+            {/* พื้นที่แสดงกราฟวิเคราะห์ข้อมูล */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+              {/* กราฟเส้นแสดงข้อมูลการเข้างานรายสัปดาห์ */}
               <div className="bg-white rounded-lg shadow p-4">
                 <h2 className="text-lg font-semibold mb-4">การเข้างานรายสัปดาห์</h2>
                 <Chart
@@ -201,15 +223,16 @@ export default function AdminDashboard() {
                     hAxis: { title: 'วัน' },
                     vAxis: { title: 'จำนวนพนักงาน' },
                     series: {
-                      0: { color: '#2A7F7F' },
-                      1: { color: '#f56565' },
-                      2: { color: '#F59E0B' },
+                      0: { color: '#2A7F7F' },  // สีเส้นกราฟสำหรับพนักงานที่มาทำงาน
+                      1: { color: '#f56565' },  // สีเส้นกราฟสำหรับพนักงานที่ขาด/ลา
+                      2: { color: '#F59E0B' },  // สีเส้นกราฟสำหรับพนักงานที่มาสาย
                     },
-                    legend: { position: 'bottom' },
+                    legend: { position: 'bottom' },  // ตำแหน่งของคำอธิบายกราฟ
                   }}
                 />
               </div>
               
+              {/* กราฟวงกลมแสดงจำนวนพนักงานแยกตามแผนก */}
               <div className="bg-white rounded-lg shadow p-4">
                 <h2 className="text-lg font-semibold mb-4">พนักงานแยกตามแผนก</h2>
                 <Chart
@@ -219,17 +242,18 @@ export default function AdminDashboard() {
                   loader={<div>กำลังโหลดข้อมูล...</div>}
                   data={employeesByDept}
                   options={{
-                    colors: ['#2A7F7F', '#3B82F6', '#F59E0B', '#10B981', '#6366F1'],
-                    legend: { position: 'bottom' },
+                    colors: ['#2A7F7F', '#3B82F6', '#F59E0B', '#10B981', '#6366F1'],  // สีต่างๆ สำหรับแต่ละส่วนของกราฟวงกลม
+                    legend: { position: 'bottom' },  // ตำแหน่งของคำอธิบายกราฟ
                   }}
                 />
               </div>
             </div>
             
-            {/* Quick access links */}
+            {/* ส่วนแสดงลิงก์ลัดไปยังฟังก์ชันสำคัญต่างๆ */}
             <div className="bg-white rounded-lg shadow p-4 mb-6">
               <h2 className="text-lg font-semibold mb-4">การดำเนินการด่วน</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                {/* ลิงก์ไปยังหน้าเพิ่มพนักงานใหม่ */}
                 <Link href="/admin/employees/new" className="flex items-center p-3 rounded-lg border border-gray-200 hover:bg-gray-50">
                   <div className="p-2 rounded-full bg-blue-100 text-blue-500 mr-3">
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -239,6 +263,7 @@ export default function AdminDashboard() {
                   <span>เพิ่มพนักงานใหม่</span>
                 </Link>
                 
+                {/* ลิงก์ไปยังหน้าจัดการพนักงาน */}
                 <Link href="/admin/employees" className="flex items-center p-3 rounded-lg border border-gray-200 hover:bg-gray-50">
                   <div className="p-2 rounded-full bg-green-100 text-green-500 mr-3">
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -248,6 +273,7 @@ export default function AdminDashboard() {
                   <span>จัดการพนักงาน</span>
                 </Link>
                 
+                {/* ลิงก์ไปยังหน้าจัดการตารางงาน */}
                 <Link href="/admin/schedule" className="flex items-center p-3 rounded-lg border border-gray-200 hover:bg-gray-50">
                   <div className="p-2 rounded-full bg-yellow-100 text-yellow-500 mr-3">
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -257,6 +283,7 @@ export default function AdminDashboard() {
                   <span>จัดการตารางงาน</span>
                 </Link>
                 
+                {/* ลิงก์ไปยังหน้าตั้งค่าระบบ */}
                 <Link href="/admin/settings" className="flex items-center p-3 rounded-lg border border-gray-200 hover:bg-gray-50">
                   <div className="p-2 rounded-full bg-purple-100 text-purple-500 mr-3">
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
