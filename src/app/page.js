@@ -1,36 +1,35 @@
-"use client";
+"use client"; // คอมโพเนนต์ฝั่งไคลเอนต์
 
-import Image from "next/image";
-import Link from "next/link";
-import { useState, useEffect } from "react";
-import { useAuth } from "../context/AuthContext";
+// นำเข้าคอมโพเนนต์และฟังก์ชันที่จำเป็น
+import Image from "next/image"; // คอมโพเนนต์สำหรับแสดงรูปภาพแบบออพติไมซ์
+import Link from "next/link"; // คอมโพเนนต์สำหรับการนำทางภายในแอพ
+import { useState, useEffect } from "react"; // ฮุคพื้นฐานสำหรับจัดการสถานะและวงจรชีวิต
+import { useAuth } from "../context/AuthContext"; // ฮุคสำหรับเรียกใช้ข้อมูลการยืนยันตัวตน
 
-// คอมโพเนนต์หลักสำหรับหน้าเข้าสู่ระบบ
+// คอมโพเนนต์หลักสำหรับหน้าเข้าสู่ระบบ (หน้าแรกของแอปพลิเคชัน)
 export default function Home() {
-  // สร้าง state สำหรับจัดเก็บชื่อผู้ใช้
-  const [username, setUsername] = useState("");
-  // สร้าง state สำหรับจัดเก็บรหัสผ่าน
-  const [password, setPassword] = useState("");
-  // สร้าง state สำหรับจัดเก็บข้อความแสดงข้อผิดพลาด
-  const [error, setError] = useState("");
-  // สร้าง state สำหรับสถานะจดจำการเข้าสู่ระบบ
-  const [rememberMe, setRememberMe] = useState(false);
-  // state สำหรับควบคุมการแสดงผลหน้าเว็บ
-  const [pageReady, setPageReady] = useState(false);
-  // ดึงฟังก์ชันเข้าสู่ระบบจาก AuthContext
-  const { login, loading } = useAuth();
+  // สร้าง state ต่างๆ สำหรับจัดการข้อมูลในฟอร์มและการแสดงผล
+  const [username, setUsername] = useState(""); // สำหรับเก็บค่าชื่อผู้ใช้
+  const [password, setPassword] = useState(""); // สำหรับเก็บค่ารหัสผ่าน
+  const [error, setError] = useState(""); // สำหรับเก็บข้อความแสดงข้อผิดพลาด
+  const [rememberMe, setRememberMe] = useState(false); // สำหรับสถานะจดจำการเข้าสู่ระบบ
+  const [pageReady, setPageReady] = useState(false); // สำหรับควบคุมการแสดงผลหน้าเว็บ ป้องกันการกระพริบ
+  
+  // ดึงฟังก์ชันและสถานะจาก AuthContext
+  const { login, loading } = useAuth(); // login=ฟังก์ชันเข้าสู่ระบบ, loading=สถานะกำลังโหลด
 
-  // ตรวจสอบสถานะ loading จาก AuthContext
+  // ตรวจสอบสถานะ loading จาก AuthContext เพื่อป้องกันการกระพริบของหน้าเว็บ
   useEffect(() => {
+    // เมื่อไม่มีการโหลดข้อมูลแล้ว ให้แสดงหน้าเว็บ
     if (!loading) {
       setPageReady(true);
     }
-  }, [loading]);
+  }, [loading]); // เรียกใช้เมื่อ loading เปลี่ยนแปลง
 
   // ฟังก์ชันจัดการการส่งฟอร์มเข้าสู่ระบบ
   const handleSubmit = (e) => {
-    e.preventDefault();
-    setError("");
+    e.preventDefault(); // ป้องกันการรีเฟรชหน้าเว็บเมื่อกดส่งฟอร์ม
+    setError(""); // ล้างข้อความแสดงข้อผิดพลาดเดิม
     
     // ตรวจสอบว่ามีการกรอกชื่อผู้ใช้และรหัสผ่านครบหรือไม่
     if (!username || !password) {
@@ -43,9 +42,10 @@ export default function Home() {
     if (!success) {
       setError("ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง");
     }
+    // หากสำเร็จ AuthContext จะนำทางไปยังหน้าที่เหมาะสมโดยอัตโนมัติ
   };
 
-  // แสดงหน้าโหลดถ้า AuthContext กำลังโหลดข้อมูล
+  // แสดงหน้าโหลดถ้า AuthContext กำลังโหลดข้อมูล เพื่อป้องกันการกระพริบ
   if (!pageReady) {
     return (
       <div className="bg-[#DEFBF9] min-h-screen flex items-center justify-center">
@@ -54,10 +54,11 @@ export default function Home() {
     );
   }
 
+  // หน้าเว็บหลักที่แสดงเมื่อโหลดเสร็จสมบูรณ์
   return (
     <>
       <main className="bg-[#DEFBF9] min-h-screen flex flex-col items-center justify-center p-4">
-        {/* ส่วนแสดงโลโก้ */}
+        {/* ส่วนแสดงโลโก้ของระบบ */}
         <div className="mb-6">
           <Image 
             src="/assets/Logo/logo.png"
@@ -68,17 +69,18 @@ export default function Home() {
           />
         </div>
 
-        {/* ฟอร์มเข้าสู่ระบบ */}
+        {/* ฟอร์มสำหรับการเข้าสู่ระบบ */}
         <div className="bg-white rounded-lg p-8 w-full max-w-md">
           <h1 className="text-2xl font-medium text-[#2A7F7F] mb-6">เข้าสู่ระบบ</h1>
           
-          {/* แสดงข้อความแจ้งเตือนข้อผิดพลาด (ถ้ามี) */}
+          {/* แสดงข้อความแจ้งเตือนข้อผิดพลาด (แสดงเฉพาะเมื่อมีข้อผิดพลาด) */}
           {error && (
             <div className="mb-4 p-2 bg-red-100 text-red-700 rounded-md text-sm">
               {error}
             </div>
           )}
           
+          {/* ฟอร์มสำหรับกรอกข้อมูลเข้าสู่ระบบ */}
           <form onSubmit={handleSubmit}>
             {/* ช่องกรอกชื่อผู้ใช้ */}
             <div className="mb-4">
@@ -106,7 +108,7 @@ export default function Home() {
               />
             </div>
             
-            {/* ตัวเลือกจดจำการเข้าสู่ระบบ */}
+            {/* ตัวเลือกจดจำการเข้าสู่ระบบ สำหรับเก็บสถานะผู้ใช้ */}
             <div className="mb-6 flex items-center">
               <input 
                 type="checkbox" 
@@ -126,7 +128,7 @@ export default function Home() {
               เข้าสู่ระบบ
             </button>
             
-            {/* ลิงก์ไปหน้าลืมรหัสผ่าน */}
+            {/* ลิงก์สำหรับไปยังหน้าลืมรหัสผ่าน */}
             <div className="mt-4 text-center">
               <Link href="/forgot-password" className="text-[#2A7F7F] text-sm hover:underline">
                 ลืมรหัสผ่าน?
@@ -135,18 +137,18 @@ export default function Home() {
           </form>
         </div>
         
-        {/* ส่วนข้อมูลเพิ่มเติมและคำแนะนำ */}
+        {/* ส่วนแสดงข้อมูลเพิ่มเติมและคำแนะนำการใช้งาน */}
         <div className="mt-8 text-center text-sm text-gray-600">
           <p>
             ระบบบันทึกเวลาทำงานพนักงาน (Time Clock System)
           </p>
-          {/* ข้อความแจ้งเตือนสำคัญสำหรับการใช้งาน */}
+          {/* ข้อความแจ้งเตือนสำคัญเกี่ยวกับการลงทะเบียนบัญชีผู้ใช้ */}
           <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-md text-amber-700">
             <p className="font-medium">หมายเหตุสำคัญ</p>
             <p>พนักงานไม่สามารถลงทะเบียนบัญชีผู้ใช้ได้ด้วยตนเอง</p>
             <p>กรุณาติดต่อผู้ดูแลระบบเพื่อขอรับบัญชีผู้ใช้สำหรับเข้าใช้งาน</p>
           </div>
-          {/* ข้อมูลรหัสสำหรับทดสอบระบบ */}
+          {/* ส่วนแสดงข้อมูลตัวอย่างสำหรับทดสอบการเข้าสู่ระบบ */}
           <p className="mt-2">
             ข้อมูลเข้าสู่ระบบสำหรับทดสอบ:
           </p>
