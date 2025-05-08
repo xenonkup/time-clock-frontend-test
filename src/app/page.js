@@ -146,6 +146,22 @@ export default function Home() {
             <p>พนักงานไม่สามารถลงทะเบียนบัญชีผู้ใช้ได้ด้วยตนเอง</p>
             <p>กรุณาติดต่อผู้ดูแลระบบเพื่อขอรับบัญชีผู้ใช้สำหรับเข้าใช้งาน</p>
           </div>
+          {/* ข้อมูลรหัสสำหรับทดสอบระบบ */}
+          <p className="mt-2">
+            ข้อมูลเข้าสู่ระบบสำหรับทดสอบ:
+          </p>
+          <div className="mt-2 flex flex-wrap justify-center gap-4">
+            <div>
+              <p><strong>แอดมิน</strong></p>
+              <p>ชื่อผู้ใช้: admin</p>
+              <p>รหัสผ่าน: admin123</p>
+            </div>
+            <div>
+              <p><strong>พนักงาน</strong></p>
+              <p>ชื่อผู้ใช้: employee1</p>
+              <p>รหัสผ่าน: emp123</p>
+            </div>
+          </div>
         </div>
       </main>
     </>
